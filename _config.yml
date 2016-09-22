@@ -17,9 +17,9 @@ gavatar: http://dreamofbook.qiniudn.com/Az..png
 favicon: img/favicon.ico
 
 douban_username: moolighty
-twitter_username: LiangChuanjian 
+twitter_username: moolighty
 github_username: moolighty  
-facebook_username: Chuanjian Liang  
+facebook_username: chuanjian.liang.5
 weibo_username: 
 zhihu_username:   
 
@@ -52,17 +52,17 @@ defaults:
       type: "posts"
     values:
       layout: "post"
-      author: "Azeril"
+      author: "moolighty"
       header-img: "img/fantasy.jpg" # We don't want posts without a header image, that whould mean white on white
 
 
 # Comments 
 comments :
-  provider : duoshuo
-  duoshuo :
-    short_name : Azeril
+  provider : firedraky
+  firedraky :
+    short_name : moolighty
   disqus :
-      short_name : Azeril
+      short_name : moolighty
 
 # Analytics and webmaster tools stuff goes here
 google_analytics: UA-66863061-1
