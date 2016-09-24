@@ -5,7 +5,6 @@ tagline: "月之光"
 description: "情不知所起 一往而深"  
 baseurl: ""
 url: "http://blog.moolighty.ml"  
-#url: "http://localhost:4000"
 
 # About/contact
 owner: 
@@ -14,7 +13,7 @@ owner:
   bio: "故人笑比中庭树，一日秋风一日疏"
 
 # Data
-gavatar: http://dreamofbook.qiniudn.com/Az..png
+#gavatar: http://dreamofbook.qiniudn.com/Az..png
 favicon: img/favicon.ico
 
 douban_username: 
