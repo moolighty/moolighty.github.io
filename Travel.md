@@ -1,10 +1,9 @@
 ---
 layout: page
 title: "Travel"
-description: "路与风景"
+description: "灵魂和身体，必须有一个在路上"
 header-img: "img/plane2.jpg"
 ---
-
-
-
-我的 [蝉游记](http://chanyouji.com/users/448398)
+<center>
+每个人心中，都会有一个古镇情怀，流水江南，烟笼人家。
+</center>
