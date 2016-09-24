@@ -1,6 +1,6 @@
-# Moolighty 月之光
+# Microdust 微尘
 
-This is a blog created by Moolighty. The blog is live at [moolighty](http://blog.moolighty.ml/).
+This is a blog created by Azeril. The blog is live at [azeril.me](http://azeril.me/).
 
 ## Thanks
 
