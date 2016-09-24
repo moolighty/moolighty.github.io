@@ -5,6 +5,7 @@
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                 <ul class="list-inline text-center">
                     <!-- kill the Facebook and Weibo -->
+                    <!--
                     <li>
                         <a href="{{ "/feed.xml" | prepend: site.baseurl }}">
                             <span class="fa-stack fa-lg">
@@ -13,7 +14,7 @@
                             </span>
                         </a>
                     </li>
-                    
+                    -->
 
                     {% if site.twitter_username %}
                     <li>
@@ -26,8 +27,7 @@
                     </li>
                     {% endif %}
 
-                    {% if site.github_username %}
-                    <li>
+                    {% if site.github_username %}mZ                    <li>
                         <a href="https://github.com/{{ site.github_username }}">
                             <span class="fa-stack fa-lg">
                                 <i class="fa fa-circle fa-stack-2x"></i>
@@ -50,7 +50,6 @@
                     {% endif %}
                     -->
 
-                    <!--
                     {% if site.facebook_username %}
                     <li>
                         <a href="https://www.facebook.com/{{ site.facebook_username }}">
@@ -61,7 +60,6 @@
                         </a>
                     </li>
                     {% endif %}
-                    -->
 
                     {% if site.zhihu_username %}
                     <li>
@@ -74,7 +72,6 @@
                     </li>
                     {% endif %}
 
-                    <!--
                     {% if site.weibo_username %}
                     <li>
                         <a target="_blank" href="http://weibo.com/{{ site.weibo_username }}">
@@ -85,7 +82,6 @@
                         </a>
                     </li>
                     {% endif %}
-                    -->
 
                 </ul>
                 <p class="copyright text-muted">
