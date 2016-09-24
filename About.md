@@ -16,5 +16,3 @@ header-img: "img/plane.jpg"
 
 ——纳兰容若《木兰花令》
 </center>
-
-<img src="img/tree.jpg" align="center">
