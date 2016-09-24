@@ -1,6 +1,5 @@
 # Moolighty 月之光
-
-This is a blog created by Azeril. The blog is live at [azeril.me](http://azeril.me/).
+## 我是人间惆怅客
 
 ## Thanks
 
