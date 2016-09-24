@@ -16,13 +16,11 @@ owner:
 #gavatar: http://dreamofbook.qiniudn.com/Az..png
 favicon: img/favicon.ico
 
-douban_username: 
 twitter_username: moolighty 
 github_username: moolighty  
 facebook_username:chuanjian.liang.5 
 weibo_username: 534867880
-zhihu_username: 
-weixin_username: 
+zhihu_username: moolighty 
 
 # Build settings  
 # use Github Flavored Markdown !important  
