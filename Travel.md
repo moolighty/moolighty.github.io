@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Travel"
+title: "生活点滴"
 description: "灵魂和身体，必须有一个在路上"
 header-img: "img/plane2.jpg"
 ---

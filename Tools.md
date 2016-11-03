@@ -1,19 +1,14 @@
 ---
 layout: page
-title: "Tools"
-description: "常用工具"
+title: "工具箱"
+description: "情不知所起 一往而深"
 header-img: "img/autumn.jpg"
 ---
 
 ### Tools 
 
-[Homebrew](http://brew.sh/) software package management
+[GitHub](https://github.com/) 代码托管平台
 
-[GitHub](https://github.com/) 代码托管与写作平台
+[GitBook](https://www.gitbook.com/) 读书写作出版平台
 
-[Evernote](https://www.evernote.com/)  印象笔记
-
-[Damotou](http://www.damotou.com/index.php) 在线转换工具 Icon 图标
-
-[ClipConverter](http://www.clipconverter.cc/) 转换和下载 Youtube 视频
-
+[Get社区](http://get.ftqq.com/) 很不错的资源总结网站

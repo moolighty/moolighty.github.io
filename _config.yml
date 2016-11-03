@@ -13,7 +13,6 @@ owner:
   bio: "故人笑比中庭树，一日秋风一日疏"
 
 # Data
-#gavatar: http://dreamofbook.qiniudn.com/Az..png
 favicon: img/favicon.ico
 
 twitter_username: moolighty 
@@ -31,8 +30,8 @@ kramdown:
 highlighter: rouge
 
 gems: 
-- jekyll-gallery-generator
-- jekyll-paginate
+    jekyll-gallery-generator
+    jekyll-paginate
 permalink: none
 paginate: 10
 exclude: ["less","node_modules","Gruntfile.js","package.json","README.md"]
@@ -45,7 +44,6 @@ timezone: Asia/Shanghai
 
 # Defaults for posts
 defaults:
-  -
     scope: 
       path: ""
       type: "posts"
