@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "独白"
-description: "Coding My World"
+description: "似曾相识只孤檠，情在不能醒"
 header-img: "img/plane.jpg"
 ---
 
@@ -15,7 +15,5 @@ header-img: "img/plane.jpg"
 何如薄幸锦衣郎，比翼连枝当日愿。<br><br>
 
 ——纳兰容若《木兰花令》
-
-似曾相识只孤檠，情在不能醒
 
 </center>
