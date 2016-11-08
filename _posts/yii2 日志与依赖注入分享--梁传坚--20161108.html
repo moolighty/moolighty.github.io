@@ -1,0 +1,290 @@
+---
+layout: post
+title: yii2 日志分析与依赖注入
+categories: [blog ]
+tags: [yii2, ]
+---
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta charset="utf-8" />
+		<link rel="stylesheet" type="text/css" href="css/style.css" />
+		<title>yii2学习笔记1</title>
+	</head>
+<body>
+<h1><strong>yii2学习笔记1</strong></h1>
+
+<h1>yii2 日志讲解</h1>
+
+<ul>
+	<li>日志类的结构图说明（yiilog目录下）</li>
+</ul>
+
+<figure><img src="Yii2%E6%97%A5%E5%BF%97.png" title="yii2日志类图"/></figure>
+
+<ul>
+	<li>日志配置样例</li>
+</ul>
+
+<pre><code>&lt;?php
+&#39;components&#39; =&gt; [
+    //为yii\log\Dispatcher对象
+    &#39;log&#39; =&gt; [
+        //&#39;traceLevel&#39; =&gt; YII_DEBUG ? 3 : 0, //=&gt;设为栈深度为3
+        //&#39;flushInterval&#39; =&gt; 1, //从messages数组内存中刷新到target对象中，此时还是在内存中，
+        //默认大小为为1000条消息日志才会刷新到target对象中
+        &#39;targets&#39; =&gt; [ 
+            //输出到翻译相应的日志文件中
+            [
+                &#39;class&#39; =&gt; &#39;yii\log\FileTarget&#39;,
+                &#39;logVars&#39; =&gt; [],
+                &#39;levels&#39; =&gt; [
+                    &#39;info&#39;,
+                    &#39;error&#39;,
+                    &#39;warning&#39;,
+                ],
+                &#39;categories&#39; =&gt; [&#39;app\commands\TranslationController*&#39;],
+                &#39;logFile&#39; =&gt; &#39;@app/runtime/translate_logs/translate.log&#39;,
+                // &#39;exportInterval&#39; =&gt; 1,
+                &#39;maxFileSize&#39; =&gt; 1024 * 2, //默认单个文件的大小为10Mb, 现在设置为2Mb
+                &#39;maxLogFiles&#39; =&gt; 20,  //默认为5
+                //消息格式[timestamps] [userIP] [userId] [sessionid] [category] message in 绝对路径文件名：行号
+                //消息前缀为[userIp] [userId] [sessionId] =&gt; [userID]
+                //消息前缀处理回调函数
+                &#39;prefix&#39; =&gt; function($message){
+                    $user = Yii::$app-&gt;has(&#39;user&#39;, true) ? Yii::$app-&gt;get(&#39;user&#39;) : null;
+                    $userID = $user ? $user-&gt;getId(false) : &#39;-&#39;;
+                    return &quot;[$userID]&quot;;
+                },
+                ],
+
+                //输出到对应的数据库中,自定义数据库对象
+                [
+                    &#39;class&#39; =&gt; &#39;api\components\DbTarget&#39;,
+                    &#39;levels&#39; =&gt; [&#39;info&#39;, &#39;error&#39;, &#39;warning&#39;],
+                    &#39;categories&#39; =&gt; [],
+                    //&#39;exportInterval&#39; =&gt; 1,
+                    &#39;except&#39; =&gt; [
+                        &#39;yii\db\*&#39;,
+                        &#39;yii\debug\*&#39;,
+                        &#39;yii\web\Session:*&#39;,
+                        &#39;yii\web\HttpException:403&#39;,
+                        &#39;yii\web\HttpException:404&#39;,
+                    ],
+                    &#39;db&#39; =&gt; &#39;am_opera&#39;,
+                    &#39;logTable&#39; =&gt; &#39;appsmoto_log&#39;,
+                    &#39;logVars&#39; =&gt; [],
+                ],
+
+                //输出到对应的邮件中
+                [
+                    &#39;class&#39; =&gt; &#39;yii\log\EmailTarget&#39;,
+                    &#39;levels&#39; =&gt; [&#39;error&#39;],
+                    &#39;categories&#39; =&gt; [&#39;email&#39;],
+                    &#39;message&#39; =&gt; [
+                        &#39;from&#39; =&gt; [&#39;noreply@zxianstudio.com&#39;],
+                        &#39;to&#39; =&gt; [&#39;t@zxianstudio.com&#39;],
+                        &#39;subject&#39; =&gt; &#39;翻译日志报警&#39;,
+                    ],
+                    &#39;logVars&#39; =&gt; [],
+                ],
+
+                //输出到系统标准输出中
+                [
+                    &#39;class&#39; =&gt; &#39;api\components\StreamLogTarget&#39;,
+                    &#39;exportInterval&#39; =&gt; 1,
+                    &#39;url&#39; =&gt; &#39;php://stdout&#39;,
+                    &#39;except&#39; =&gt; [&#39;yii*&#39;,],
+                    &#39;levels&#39; =&gt; [&#39;trace&#39;, &#39;info&#39;, &#39;error&#39;, &#39;warning&#39;],
+                    &#39;levels&#39; =&gt; [&#39;info&#39;],
+                    &#39;logVars&#39; =&gt; [],
+                ],
+            ],
+        ]
+</code></pre>
+
+<ul>
+	<li>扩展数据库代码样例</li>
+</ul>
+
+<pre><code>use yii\log\DbTarget as BaseDbTarget;
+use yii\helpers\VarDumper;
+
+/**
+ * @brief 对数据库target进行扩展
+ *
+ */
+class DbTarget extends BaseDbTarget {
+
+    private static $levels = [
+        1 =&gt; &#39;error&#39;,
+        2 =&gt; &#39;warning&#39;,
+        4 =&gt; &#39;info&#39;,
+        8 =&gt; &#39;trace&#39;,
+        64 =&gt; &#39;profile&#39;,
+        80 =&gt; &#39;profile begin&#39;,
+        96 =&gt; &#39;profile end&#39;,
+    ];
+
+    public function export()
+    {
+        $tableName = $this-&gt;db-&gt;quoteTableName($this-&gt;logTable);
+        $sql = &quot;INSERT INTO $tableName ([[level]], [[category]], [[log_time]], [[message]])
+            VALUES (:level, :category, :log_time, :message)&quot;;
+        $command = $this-&gt;db-&gt;createCommand($sql);
+        foreach ($this-&gt;messages as $message) {
+            list($text, $level, $category, $timestamp) = $message;
+            if (!is_string($text)) {
+                // exceptions may not be serializable if in the call stack somewhere is a Closure
+                if ($text instanceof \Throwable || $text instanceof \Exception) {
+                    $text = (string) $text;
+                } else {
+                    $text = \yii\helpers\VarDumper::export($text);
+                }
+            }
+
+            $logTime = date(&#39;Y-m-d H:i:s&#39;, $timestamp);
+            $level = isset(self::$levels[$level]) ? self::$levels[$level] : &#39;unknown level&#39;;
+
+            $command-&gt;bindValues([
+                &#39;:level&#39; =&gt; $level,
+                &#39;:category&#39; =&gt; $category,
+                &#39;:log_time&#39; =&gt; $logTime,
+                &#39;:message&#39; =&gt; $text,
+            ])-&gt;execute();
+        }
+    } 
+}
+ 
+</code></pre>
+
+<hr />
+
+<h1>yii2 依赖注入与服务定位器</h1>
+
+<h2>1. 依赖倒置原则（dependence inversion pricinple,DIP）</h2>
+
+<ul>
+	<li>不是我自身的，却是我需要的，都是我所依赖的。一切需要外部提供的，都是需要进行依赖注入的;</li>
+	<li>DIP是一种软件设计的指导思想。传统软件设计中，上层代码依赖于下层代码，当下层出现变动时， 上层代码也要相应变化，维护成本较高。而DIP的核心思想是<strong>上层定义接口</strong>，下层实现这个接口， 从而使得下层依赖于上层，降低耦合度，提高整个系统的弹性.</li>
+	<li>图示</li>
+</ul>
+
+<figure><img src="%E4%BE%9D%E8%B5%96%E5%80%92%E7%BD%AE%E5%8E%9F%E5%88%99.png"/></figure>
+
+<hr />
+
+<h2>2. 控制反转（Inversion of Control, IoC)</h2>
+
+<p>是一种是面向对象编程中的一种设计原则，用来减低计算机代码之间的耦合度。其基本思想是：借助于“第三方”实现具有依赖关系的对象之间的解耦。具体设计模式应用有依赖注入与服务定位器。</p>
+
+<hr />
+
+<h2>3. 依赖注入Dependence Injection, DI）</h2>
+
+<p>依赖注入就是将实例变量传入到一个对象中去，依赖注入分为构造函数注入与属性注入、接口注入等；</p>
+
+<pre><code>//构造函数注入
+class Boy{
+	private $_girl;
+	public function __construct($girl){
+		$this-&gt;_girl = $girl;
+	}
+}
+
+//属性注入
+class Boy{
+	private $_girl;
+	public function setGirl($girl){
+		$this-&gt;_girl = $girl;
+	}
+	public function getGirl(){
+		return $this-&gt;_girl;
+	}
+}
+</code></pre>
+
+<hr />
+
+<h2>4. 依赖注入容器（或者控制反转容器 IoC Container）</h2>
+
+<p>当项目比较大,依赖关系比较复杂时，比如类A依赖类B,C,…,H, 而B依赖I,J,…,O的等等，这时候实例化注入代码会非常麻烦，而IoC Container提供了动态地创建、注入依赖单元，映射依赖关系等功能，减少了许多代码量。 Yii 设计了一个 yiidiContainer 来实现了 DI Container。</p>
+
+<hr />
+
+<h2>5. 服务定位器 （Service Locator）</h2>
+
+<p>Service Locator是IoC的另一种实现方式， 其核心是把所有可能用到的依赖单元交由Service Locator进行实例化和创建、配置， 把类对依赖单元的依赖，转换成类对Service Locator的依赖。 DI 与 Service Locator并不冲突，两者可以结合使用。 目前，Yii2.0把这DI和Service Locator这两个东西结合起来使用，或者说通过DI容器，实现了Service Locator, yii2对应的类是yiidiServiceLocator.</p>
+
+<hr />
+
+<h2>6. yii2 IoC Container 与 Service Locator相关类图关系</h2>
+
+<figure><img src="%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%9C%8D%E5%8A%A1%E6%8F%90%E4%BE%9B%E5%99%A8.png"/></figure>
+
+<p>一个application仅有一个DI Container,可以有多个ServiceLocator,DI Container是基石，依赖对象的创建都要借助于它；</p>
+
+<p>【ps】反射技术：它是指在PHP运行状态中，扩展分析PHP程序，导出或提取出关于类、方法、属性、参数等的详细信息，包括注释。这种动态获取的信息以及动态调用对象的方法的功能称为反射API。反射是操纵面向对象范型中元模型的API，其功能十分强大，可帮助我们构建复杂，可扩展的应用；IoC容器使用反射类ReflectionClass中相关函数类，比如使用newInstanceArgs、newInstanceArgs方法来创建实例对象。</p>
+
+<hr />
+
+<h2>7. 启动脚本讲解</h2>
+
+<p>这里以appsmoto的frontend项目的启动脚本为例，代码如下：</p>
+
+<pre><code>//env.php 环境配置，定义一些路径别名，以便用简短的类名引用类与找到相关类文件
+&#39;&#39; $base = require(&quot;/opt/lib/api/config/env.php&quot;);
+&#39;&#39; $env = _merge($base, [
+&#39;&#39;     &#39;aliases&#39; =&gt; [
+&#39;&#39;         &#39;@api&#39; =&gt; __DIR__.&#39;/api&#39;,
+&#39;&#39;         &#39;@zaccounts&#39; =&gt; __DIR__.&#39;/zaccounts&#39;,
+&#39;&#39;         &#39;@common&#39; =&gt; __DIR__.&#39;/common&#39;,
+&#39;&#39;         &#39;@schema&#39; =&gt; __DIR__.&#39;/dbschema&#39;,
+&#39;&#39;         &#39;@vendor&#39; =&gt; &#39;/opt/lib/yii2/vendor&#39;,
+&#39;&#39;     ],
+&#39;&#39;     &#39;debug&#39; =&gt; true,
+&#39;&#39; ]);
+&#39;&#39; return $env;
+
+//index.php
+&lt;?PHP
+//第一：引入相关类文件路径别名
+$env = require(__DIR__.&quot;/../env.php&quot;);
+
+//第二：定义预定义宏，即常量
+defined(&quot;YII_DEBUG&quot;) or define(&#39;YII_DEBUG&#39;, isset($env[&#39;debug&#39;]) &amp;&amp; $env[&#39;debug&#39;]);
+defined(&quot;Z_DEBUG&quot;) or define(&#39;Z_DEBUG&#39;, isset($env[&#39;debug&#39;]) &amp;&amp; $env[&#39;debug&#39;]);
+defined(&quot;YII_ENV&quot;) or define(&#39;YII_ENV&#39;, isset($env[&#39;debug&#39;]) &amp;&amp; $env[&#39;debug&#39;] ? &#39;dev&#39; : &#39;prod&#39;);
+defined(&#39;USE_PROXY&#39;) or define(&#39;USE_PROXY&#39;, isset($env[&#39;proxy&#39;]) &amp;&amp; !empty($env[&#39;proxy&#39;]));
+defined(&#39;VENDOR&#39;) or define(&#39;VENDOR&#39;, $env[&#39;aliases&#39;][&#39;@vendor&#39;]);
+
+//yii2借助了PHP的类自动加载机制高效实现了类的定位、导入，这一机制兼容
+// PSR-4 的标准。在Yii中，类仅在调用时才会被加载，特别是核心类，其定位
+//非常快，这也是Yii高效高性能的一个重要体现。*/
+
+//第三：这个是第三方的autoloader
+require(VENDOR. &#39;/autoload.php&#39;);
+
+//第四：这个是Yii的Autoloader，放在最后面，确保其插入的autoloader会放在
+//最前面，并同时初始化单例对象$classMap(存放命名空间与类文件的映射关系，
+//单例对象$container,即依赖注入容器)
+require(VENDOR. &#39;/yiisoft/yii2/Yii.php&#39;);
+
+//第五：加载配置文件，这一步很重要,在这里将配置app的相关属性：如组件，
+//模块，别名，参数等等；
+$config = require(__DIR__ . &#39;/../config/web.php&#39;);
+
+//第六：实例化应用程序，进行YII::$app的初始化，保证单一实例
+(new yii\web\Application($config))-&gt;run();
+
+
+</code></pre>
+
+<h2>参考文献地址</h2>
+
+<p><a href="http://www.digpage.com/di.html#id11">深入理解Yii2.0</a></p>
+
+</body>
+</html>
+
